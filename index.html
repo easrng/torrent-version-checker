@@ -56,11 +56,16 @@
         const [decoded, setDecoded] = useState();
         useEffect(async () => {
           if (file) {
-            setDecoded(
-              bencode.decode(
-                new Uint8Array(await new Response(file).arrayBuffer())
-              )
-            );
+            try {
+              setDecoded(
+                bencode.decode(
+                  new Uint8Array(await new Response(file).arrayBuffer())
+                )
+              );
+            } catch (e) {
+              console.error(e);
+              setDecoded(e);
+            }
           }
         }, [file]);
         const torrentInput = useRef();
@@ -74,13 +79,8 @@
                 accept=".torrent"
                 ref=${torrentInput}
                 onChange=${(e) => {
-                  try {
-                    setFile(torrentInput.current.files[0]);
-                    setDecoded(null);
-                  } catch (e) {
-                    console.error(e);
-                    setDecoded(e);
-                  }
+                  setFile(torrentInput.current.files[0]);
+                  setDecoded(null);
                 }}
               />
             </p>
