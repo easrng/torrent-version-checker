@@ -74,36 +74,42 @@
                 accept=".torrent"
                 ref=${torrentInput}
                 onChange=${(e) => {
-                  e.preventDefault();
-                  setFile(torrentInput.current.files[0]);
-                  setDecoded(null);
+                  try {
+                    setFile(torrentInput.current.files[0]);
+                    setDecoded(null);
+                  } catch (e) {
+                    console.error(e);
+                    setDecoded(e);
+                  }
                 }}
               />
             </p>
           </label>
           ${file &&
           (decoded
-            ? html`<p>This torrent supports:</p>
-                <ul class="checklist">
-                  <li>
-                    <input
-                      type="checkbox"
-                      autocomplete="off"
-                      disabled
-                      checked=${!!decoded.info.pieces}
-                    />
-                    v1
-                  </li>
-                  <li>
-                    <input
-                      type="checkbox"
-                      autocomplete="off"
-                      disabled
-                      checked=${!!decoded.info["file tree"]}
-                    />
-                    v2
-                  </li>
-                </ul>`
+            ? decoded instanceof Error
+              ? html`<p>there was an error decoding the torrent :(</p>`
+              : html`<p>This torrent supports:</p>
+                  <ul class="checklist">
+                    <li>
+                      <input
+                        type="checkbox"
+                        autocomplete="off"
+                        disabled
+                        checked=${!!decoded.info.pieces}
+                      />
+                      v1
+                    </li>
+                    <li>
+                      <input
+                        type="checkbox"
+                        autocomplete="off"
+                        disabled
+                        checked=${!!decoded.info["file tree"]}
+                      />
+                      v2
+                    </li>
+                  </ul>`
             : html`<p>decoding torrent...</p>`)}
         `;
       }
@@ -114,7 +120,8 @@
       document.getElementById("app").innerHTML = "<p>loading...</p>";
     </script>
     <script nomodule>
-      document.getElementById("app").innerHTML = "<p>please update ur browser to one that supports es modules</p>";
+      document.getElementById("app").innerHTML =
+        "<p>please update ur browser to one that supports es modules</p>";
     </script>
   </body>
 </html>
