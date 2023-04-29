@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>torrent version checker</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css"
+      integrity="sha256-DinmpYZF05az4NR0L6WbuKZ3aeSHQNJ/OqGqwOHxFPQ="
+      crossorigin="anonymous"
+    />
+    <style>
+      .checklist {
+        position: relative;
+        list-style: none;
+      }
+      .checklist input[type="checkbox"] {
+        position: relative;
+        left: -1.125rem;
+        margin-right: -0.5em;
+        width: 1em;
+        height: 1em;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>torrent version checker</h1>
+      <p>check a torrent file supports BitTorrent v1, v2, or both (hybrid).</p>
+    </header>
+    <main>
+      <div id="app">
+        <noscript>no js 😔</noscript>
+      </div>
+    </main>
+    <footer>
+      <hr />
+      yet another random site by <a href="https://easrng.net">easrng</a>
+    </footer>
+    <script type="module" id="mainmodule">
+      import { render, h } from "https://esm.sh/preact@10.13.0";
+      import {
+        useState,
+        useRef,
+        useEffect,
+      } from "https://esm.sh/preact@10.13.0/hooks";
+      import htm from "https://esm.sh/htm@3.1.1";
+      import bencode from "https://esm.sh/bencode@3.0.3";
+      document.getElementById("app").textContent = "";
+      const html = htm.bind(h);
+      function App() {
+        const [file, setFile] = useState();
+        const [decoded, setDecoded] = useState();
+        useEffect(async () => {
+          if (file) {
+            setDecoded(
+              bencode.decode(
+                new Uint8Array(await new Response(file).arrayBuffer())
+              )
+            );
+          }
+        }, [file]);
+        const torrentInput = useRef();
+        return html`
+          <label>
+            <p>choose a .torrent file:</p>
+            <p>
+              <input
+                type="file"
+                required
+                accept=".torrent"
+                ref=${torrentInput}
+                onChange=${(e) => {
+                  e.preventDefault();
+                  setFile(torrentInput.current.files[0]);
+                  setDecoded(null);
+                }}
+              />
+            </p>
+          </label>
+          ${file &&
+          (decoded
+            ? html`<p>This torrent supports:</p>
+                <ul class="checklist">
+                  <li>
+                    <input
+                      type="checkbox"
+                      autocomplete="off"
+                      disabled
+                      checked=${!!decoded.info.pieces}
+                    />
+                    v1
+                  </li>
+                  <li>
+                    <input
+                      type="checkbox"
+                      autocomplete="off"
+                      disabled
+                      checked=${!!decoded.info["file tree"]}
+                    />
+                    v2
+                  </li>
+                </ul>`
+            : html`<p>decoding torrent...</p>`)}
+        `;
+      }
+
+      render(html`<${App} />`, document.getElementById("app"));
+    </script>
+    <script>
+      document.getElementById("app").innerHTML = "<p>loading...</p>";
+    </script>
+    <script nomodule>
+      document.getElementById("app").innerHTML = "<p>please update ur browser to one that supports es modules</p>";
+    </script>
+  </body>
+</html>
